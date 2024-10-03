@@ -26,9 +26,9 @@
         <form id="tokenForm">
             <div class="input-wrapper">
                 <input type="text" id="refresh_token" name="refresh_token" placeholder=" " required>
-                <label for="refresh_token">刷新令牌</label>
+                <label for="refresh_token">刷新令牌(rt)</label>
             </div>
-            <button type="button" onclick="getToken()">获取访问令牌</button>
+            <button type="button" onclick="getToken()">获取访问令牌(at)</button>
         </form>
         <div id="access_token"></div>
     </div>
@@ -36,7 +36,7 @@
         async function getToken() {
             const refreshToken = document.getElementById('refresh_token').value.trim();
             if (!refreshToken) {
-                displayError('刷新令牌不能为空。');
+                displayError('刷新令牌(rt)不能为空。');
                 return;
             }
             const primaryUrl = 'https://token.oaifree.com/api/auth/refresh';
@@ -95,7 +95,7 @@
 
         function displayAccessToken(accessToken) {
             const accessTokenElement = document.getElementById('access_token');
-            accessTokenElement.innerText = `访问令牌: ${accessToken}`;
+            accessTokenElement.innerText = `访问令牌(at): ${accessToken}`;
             accessTokenElement.onclick = (event) => {
                 if (accessToken) copyToClipboard(accessToken, event.clientX, event.clientY, '访问令牌已复制到剪贴板');
             };

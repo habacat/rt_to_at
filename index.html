@@ -14,18 +14,21 @@
         .input-wrapper input:focus + label,.input-wrapper input:not(:placeholder-shown) + label{top:-0.5rem;left:0.9375rem;font-size:0.875rem;color:#0f9977;}
         button{width:100%;padding:0.9375rem 1.25rem;border:none;border-radius:0.5rem;background-color:#0f9977;color:white;cursor:pointer;font-size:1.125rem;font-weight:bold;box-sizing:border-box;}
         button:hover{background-color:#0c7b61;}
-        #access_token{margin-top:1.5625rem;padding:0.9375rem;border-radius:0.5rem;border:1px solid #ccc;background-color:#f9f9f9;word-wrap:break-word;overflow-y:auto;height:5rem;font-size:1rem;box-sizing:border-box;}
+        #access_token{margin-top:1.5625rem;padding:0.9375rem;border-radius:0.5rem;border:1px solid #ccc;background-color:#f9f9f9;word-wrap:break-word;overflow-y:auto;height:5rem;font-size:1rem;box-sizing:border-box;cursor:pointer;}
+        .access-token-part-button{margin-top:1rem;padding:0.5rem 1rem;font-size:1rem;border:none;border-radius:0.25rem;background-color:#0f9977;color:white;cursor:pointer;}
+        .access-token-part-button:hover{background-color:#0c7b61;}
+        .tooltip{position:absolute;background:black;color:white;padding:0.3125rem;border-radius:0.3125rem;z-index:1000;opacity:0;transition:opacity 0.3s;}
     </style>
 </head>
 <body>
     <div class="center">
-        <h2>Login to Access</h2>
+        <h2>登录访问</h2>
         <form id="tokenForm">
             <div class="input-wrapper">
                 <input type="text" id="refresh_token" name="refresh_token" placeholder=" " required>
-                <label for="refresh_token">Refresh Token</label>
+                <label for="refresh_token">刷新令牌</label>
             </div>
-            <button type="button" onclick="getToken()">Get Access Token</button>
+            <button type="button" onclick="getToken()">获取访问令牌</button>
         </form>
         <div id="access_token"></div>
     </div>
@@ -92,9 +95,9 @@
 
         function displayAccessToken(accessToken) {
             const accessTokenElement = document.getElementById('access_token');
-            accessTokenElement.innerText = `Access Token: ${accessToken}`;
-            accessTokenElement.onclick = () => {
-                if (accessToken) copyToClipboard(accessToken, event.clientX, event.clientY, 'Access Token 已复制到剪贴板');
+            accessTokenElement.innerText = `访问令牌: ${accessToken}`;
+            accessTokenElement.onclick = (event) => {
+                if (accessToken) copyToClipboard(accessToken, event.clientX, event.clientY, '访问令牌已复制到剪贴板');
             };
             manageAccessTokenButtons(accessToken);
         }
@@ -107,10 +110,9 @@
                 const parts = accessToken.match(/.{1,800}/g);
                 parts.forEach((part, index) => {
                     const button = document.createElement('button');
-                    button.innerText = `Part ${index + 1}`;
+                    button.innerText = `部分 ${index + 1}`;
                     button.className = 'access-token-part-button';
-                    button.style.marginTop = '1rem';
-                    button.addEventListener('click', (e) => copyToClipboard(part, e.clientX, e.clientY, `Part ${index + 1} 已复制到剪贴板`));
+                    button.addEventListener('click', (e) => copyToClipboard(part, e.clientX, e.clientY, `部分 ${index + 1} 已复制到剪贴板`));
                     container.appendChild(button);
                 });
             }
@@ -137,25 +139,18 @@
 
         function showTooltip(message, x, y) {
             const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
             tooltip.innerText = message;
-            Object.assign(tooltip.style, {
-                position: 'absolute',
-                backgroundColor: 'black',
-                color: 'white',
-                padding: '0.3125rem',
-                borderRadius: '0.3125rem',
-                top: `${y + 0.625}rem`,
-                left: `${x + 0.625}rem`,
-                zIndex: 1000,
-                opacity: 0,
-                transition: 'opacity 0.5s'
-            });
+            tooltip.style.top = `${y + 10}px`;
+            tooltip.style.left = `${x + 10}px`;
             document.body.appendChild(tooltip);
             requestAnimationFrame(() => { tooltip.style.opacity = 1; });
             setTimeout(() => {
                 tooltip.style.opacity = 0;
-                setTimeout(() => { tooltip.remove(); }, 500);
-            }, 2000);
+                tooltip.addEventListener('transitionend', () => {
+                    tooltip.remove();
+                });
+            }, 3000);
         }
     </script>
 </body>

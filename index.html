@@ -1,88 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hans-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RT to AT</title>
     <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            background: #f0f0f0;
-            font-family: Arial, sans-serif;
-        }
-        .center {
-            width: 400px; /* Make the container wider */
-            padding: 50px;
-            background: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            border-radius: 8px; /* Make the whole container rounded */
-        }
-        h2 {
-            font-size: 24px; /* Larger title */
-        }
-        .input-wrapper {
-            position: relative;
-            margin-bottom: 25px;
-            width: 100%; /* Make sure wrapper takes full width */
-        }
-        .input-wrapper input {
-            width: 100%; /* Ensure full width of input */
-            height: 50px;
-            padding: 15px;
-            border-radius: 8px; /* Rounded corners */
-            border: 1px solid #ccc;
-            outline: none;
-            font-size: 16px; /* Larger font size */
-            background-color: #f9f9f9; /* Light gray background */
-            box-sizing: border-box; /* Include padding and border in width */
-        }
-        .input-wrapper label {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            transition: all 0.3s;
-            pointer-events: none;
-            color: #aaa;
-        }
-        .input-wrapper input:focus + label,
-        .input-wrapper input:not(:placeholder-shown) + label {
-            top: -8px;
-            left: 15px;
-            font-size: 14px; /* Smaller label when active */
-            color: #0f9977;
-        }
-        button {
-            width: 100%; /* Match input width */
-            padding: 15px 20px;
-            border: none;
-            border-radius: 8px; /* Rounded corners */
-            background-color: #0f9977;
-            color: white;
-            cursor: pointer;
-            font-size: 18px; /* Larger font size */
-            font-weight: bold;
-            box-sizing: border-box; /* Ensure full width with padding/border */
-        }
-        button:hover {
-            background-color: #0c7b61; /* Slightly darker on hover */
-        }
-        #access_token {
-            margin-top: 25px;
-            padding: 15px;
-            border-radius: 8px; /* Rounded corners */
-            border: 1px solid #ccc; /* Matching style with input */
-            background-color: #f9f9f9;
-            word-wrap: break-word;
-            overflow-y: auto;
-            height: 80px; /* Increased height */
-            font-size: 16px; /* Larger font size */
-            box-sizing: border-box; /* Include padding and border in width */
-        }
+        body{display:flex;justify-content:center;align-items:center;height:100vh;overflow:hidden;background:#f0f0f0;font-family:Arial,sans-serif;}
+        .center{width:25rem;padding:3.125rem;background:white;box-shadow:0 0.25rem 0.5rem rgba(0,0,0,0.1);text-align:center;border-radius:0.5rem;}
+        h2{font-size:1.5rem;}
+        .input-wrapper{position:relative;margin-bottom:1.5625rem;width:100%;}
+        .input-wrapper input{width:100%;height:3.125rem;padding:0.9375rem;border-radius:0.5rem;border:1px solid #ccc;outline:none;font-size:1rem;background-color:#f9f9f9;box-sizing:border-box;}
+        .input-wrapper label{position:absolute;top:0.9375rem;left:0.9375rem;transition:all 0.3s;pointer-events:none;color:#aaa;}
+        .input-wrapper input:focus + label,.input-wrapper input:not(:placeholder-shown) + label{top:-0.5rem;left:0.9375rem;font-size:0.875rem;color:#0f9977;}
+        button{width:100%;padding:0.9375rem 1.25rem;border:none;border-radius:0.5rem;background-color:#0f9977;color:white;cursor:pointer;font-size:1.125rem;font-weight:bold;box-sizing:border-box;}
+        button:hover{background-color:#0c7b61;}
+        #access_token{margin-top:1.5625rem;padding:0.9375rem;border-radius:0.5rem;border:1px solid #ccc;background-color:#f9f9f9;word-wrap:break-word;overflow-y:auto;height:5rem;font-size:1rem;box-sizing:border-box;}
     </style>
 </head>
 <body>
@@ -99,158 +31,130 @@
     </div>
     <script>
         async function getToken() {
-            const refreshToken = document.getElementById('refresh_token').value;
+            const refreshToken = document.getElementById('refresh_token').value.trim();
+            if (!refreshToken) {
+                displayError('刷新令牌不能为空。');
+                return;
+            }
             const primaryUrl = 'https://token.oaifree.com/api/auth/refresh';
             const fallbackUrl = 'https://token.aiuuo.com/api/auth/refresh';
             let url = primaryUrl;
-            let response;
-            let result;
-
             try {
-                // 第一次请求
-                response = await fetch(url, {
+                let response = await fetch(url, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                    },
+                    headers: {'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
                     body: `refresh_token=${encodeURIComponent(refreshToken)}`
                 });
-
-                // 如果第一次请求返回403，尝试第二个URL
                 if (response.status === 403) {
                     url = fallbackUrl;
                     response = await fetch(url, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                        },
+                        headers: {'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
                         body: `refresh_token=${encodeURIComponent(refreshToken)}`
                     });
                 }
-
                 if (response.ok) {
-                    result = await response.json();
+                    const result = await response.json();
                     displayAccessToken(result.access_token);
                 } else {
-                    // 获取错误信息
-                    let errorMessage = '';
-                    try {
-                        const errorResult = await response.json();
-                        errorMessage = errorResult.message || response.statusText;
-                    } catch {
-                        errorMessage = response.statusText;
-                    }
-                    document.getElementById('access_token').innerText = `错误 ${response.status}: ${errorMessage}`;
+                    const errorMessage = await getErrorMessage(response);
+                    displayError(`错误 ${response.status}: ${errorMessage}`);
                 }
             } catch (error) {
-                // 捕捉网络错误或其他异常，尝试备用URL
                 try {
                     url = fallbackUrl;
-                    response = await fetch(url, {
+                    const response = await fetch(url, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                        },
+                        headers: {'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
                         body: `refresh_token=${encodeURIComponent(refreshToken)}`
                     });
-
                     if (response.ok) {
-                        result = await response.json();
+                        const result = await response.json();
                         displayAccessToken(result.access_token);
                     } else {
-                        // 获取错误信息
-                        let errorMessage = '';
-                        try {
-                            const errorResult = await response.json();
-                            errorMessage = errorResult.message || response.statusText;
-                        } catch {
-                            errorMessage = response.statusText;
-                        }
-                        document.getElementById('access_token').innerText = `错误 ${response.status}: ${errorMessage}`;
+                        const errorMessage = await getErrorMessage(response);
+                        displayError(`错误 ${response.status}: ${errorMessage}`);
                     }
                 } catch (fallbackError) {
-                    // 显示备用请求的错误信息
-                    document.getElementById('access_token').innerText = `请求失败: ${fallbackError.message}`;
+                    displayError(`请求失败: ${fallbackError.message}`);
                 }
+            }
+        }
+
+        async function getErrorMessage(response) {
+            try {
+                const errorResult = await response.json();
+                return errorResult.message || response.statusText;
+            } catch {
+                return response.statusText;
             }
         }
 
         function displayAccessToken(accessToken) {
             const accessTokenElement = document.getElementById('access_token');
-            accessTokenElement.innerText = 'Access Token: ' + accessToken;
-
-            // 移除之前的事件监听器（通过设置为 null）
-            accessTokenElement.onclick = null;
-
-            // 添加复制功能的事件监听器
-            accessTokenElement.onclick = function (event) {
-                if (accessToken) {
-                    copyToClipboard(accessToken, event.clientX, event.clientY, 'Access Token 已复制到剪贴板');
-                }
+            accessTokenElement.innerText = `Access Token: ${accessToken}`;
+            accessTokenElement.onclick = () => {
+                if (accessToken) copyToClipboard(accessToken, event.clientX, event.clientY, 'Access Token 已复制到剪贴板');
             };
+            manageAccessTokenButtons(accessToken);
+        }
 
-            // 如果access_token长度超过800，拆分并创建按钮
+        function manageAccessTokenButtons(accessToken) {
+            const container = document.getElementById('access_token').parentNode;
+            const existingButtons = container.querySelectorAll('.access-token-part-button');
+            existingButtons.forEach(btn => btn.remove());
             if (accessToken.length > 800) {
-                const accessTokenContainer = accessTokenElement.parentNode;
-                const parts = [];
-                for (let i = 0; i < accessToken.length; i += 800) {
-                    parts.push(accessToken.slice(i, i + 800));
-                }
-
-                // 移除之前可能存在的部分按钮
-                const existingButtons = accessTokenContainer.querySelectorAll('.access-token-part-button');
-                existingButtons.forEach(button => button.remove());
-
-                parts.forEach(function (part, index) {
+                const parts = accessToken.match(/.{1,800}/g);
+                parts.forEach((part, index) => {
                     const button = document.createElement('button');
-                    button.innerText = 'Part ' + (index + 1);
-                    button.classList.add('access-token-part-button');
+                    button.innerText = `Part ${index + 1}`;
+                    button.className = 'access-token-part-button';
                     button.style.marginTop = '1rem';
-                    button.addEventListener('click', function (event) {
-                        copyToClipboard(part, event.clientX, event.clientY, `Part ${index + 1} 已复制到剪贴板`);
-                    });
-                    accessTokenContainer.appendChild(button);
+                    button.addEventListener('click', (e) => copyToClipboard(part, e.clientX, e.clientY, `Part ${index + 1} 已复制到剪贴板`));
+                    container.appendChild(button);
                 });
-            } else {
-                // 移除任何现有的部分按钮，如果accessToken不够长
-                const accessTokenContainer = accessTokenElement.parentNode;
-                const existingButtons = accessTokenContainer.querySelectorAll('.access-token-part-button');
-                existingButtons.forEach(button => button.remove());
             }
         }
 
+        function displayError(message) {
+            const accessTokenElement = document.getElementById('access_token');
+            accessTokenElement.innerText = message;
+        }
+
         function copyToClipboard(text, x, y, tooltipMessage) {
-            const tempInput = document.createElement('textarea');
-            tempInput.value = text;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
+            navigator.clipboard.writeText(text).then(() => {
+                showTooltip(tooltipMessage, x, y);
+            }).catch(() => {
+                const tempInput = document.createElement('textarea');
+                tempInput.value = text;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                showTooltip(tooltipMessage, x, y);
+            });
+        }
 
+        function showTooltip(message, x, y) {
             const tooltip = document.createElement('div');
-            tooltip.innerText = tooltipMessage;
-            tooltip.style.position = 'absolute';
-            tooltip.style.backgroundColor = 'black';
-            tooltip.style.color = 'white';
-            tooltip.style.padding = '5px';
-            tooltip.style.borderRadius = '5px';
-            tooltip.style.top = (y + 10) + 'px';
-            tooltip.style.left = (x + 10) + 'px';
-            tooltip.style.zIndex = 1000;
-            tooltip.style.opacity = 0;
-            tooltip.style.transition = 'opacity 0.5s';
-
+            tooltip.innerText = message;
+            Object.assign(tooltip.style, {
+                position: 'absolute',
+                backgroundColor: 'black',
+                color: 'white',
+                padding: '0.3125rem',
+                borderRadius: '0.3125rem',
+                top: `${y + 0.625}rem`,
+                left: `${x + 0.625}rem`,
+                zIndex: 1000,
+                opacity: 0,
+                transition: 'opacity 0.5s'
+            });
             document.body.appendChild(tooltip);
-
-            setTimeout(function () {
-                tooltip.style.opacity = 1;
-            }, 0);
-
-            setTimeout(function () {
+            requestAnimationFrame(() => { tooltip.style.opacity = 1; });
+            setTimeout(() => {
                 tooltip.style.opacity = 0;
-                setTimeout(function () {
-                    document.body.removeChild(tooltip);
-                }, 500);
+                setTimeout(() => { tooltip.remove(); }, 500);
             }, 2000);
         }
     </script>

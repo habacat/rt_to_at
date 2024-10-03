@@ -100,17 +100,14 @@
     <script>
     async function getToken() {
         const refreshToken = document.getElementById('refresh_token').value;
-        let url = 'https://token.oaifree.com/api/auth/refresh';
-        let response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-            },
-            body: `refresh_token=${encodeURIComponent(refreshToken)}`
-        });
+        const primaryUrl = 'https://token.oaifree.com/api/auth/refresh';
+        const fallbackUrl = 'https://token.aiuuo.com/api/auth/refresh';
+        let url = primaryUrl;
+        let response;
+        let result;
 
-        if (response.status === 403) {
-            url = 'https://token.aiuuo.com/api/auth/refresh';
+        try {
+            // 第一次请求
             response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -118,72 +115,35 @@
                 },
                 body: `refresh_token=${encodeURIComponent(refreshToken)}`
             });
-        }
 
-        if (response.ok) {
-            const result = await response.json();
-            document.getElementById('access_token').innerText = 'Access Token: ' + result.access_token;
-            
-            // 添加复制功能的事件监听器
-            document.getElementById('access_token').addEventListener('click', function (event) {
-                if (result.access_token) {
-                    var tempInput = document.createElement('textarea');
-                    tempInput.value = result.access_token;
-                    document.body.appendChild(tempInput);
-                    tempInput.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(tempInput);
+            // 如果第一次请求返回403，尝试第二个URL
+            if (response.status === 403) {
+                url = fallbackUrl;
+                response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                    },
+                    body: `refresh_token=${encodeURIComponent(refreshToken)}`
+                };
+            }
 
-                    var tooltip = document.createElement('div');
-                    tooltip.innerText = 'Access Token 已复制到剪贴板';
-                    tooltip.style.position = 'absolute';
-                    tooltip.style.backgroundColor = 'black';
-                    tooltip.style.color = 'white';
-                    tooltip.style.padding = '5px';
-                    tooltip.style.borderRadius = '5px';
-                    tooltip.style.top = (event.clientY + 10) + 'px';
-                    tooltip.style.left = (event.clientX + 10) + 'px';
-                    tooltip.style.zIndex = 1000;
-                    tooltip.style.opacity = 0;
-                    tooltip.style.transition = 'opacity 0.5s';
-
-                    document.body.appendChild(tooltip);
-
-                    setTimeout(function () {
-                        tooltip.style.opacity = 1;
-                    }, 0);
-
-                    setTimeout(function () {
-                        tooltip.style.opacity = 0;
-                        setTimeout(function () {
-                            document.body.removeChild(tooltip);
-                        }, 500);
-                    }, 2000);
-                }
-            });
-
-            // 如果access_token长度超过800，拆分并创建按钮
-            if (result.access_token.length > 800) {
-                var accessTokenContainer = document.getElementById('access_token').parentNode;
-                var parts = [];
-                for (var i = 0; i < result.access_token.length; i += 800) {
-                    parts.push(result.access_token.slice(i, i + 800));
-                }
-
-                parts.forEach(function (part, index) {
-                    var button = document.createElement('button');
-                    button.innerText = 'Part ' + (index + 1);
-                    button.style.marginTop = '1rem';
-                    button.addEventListener('click', function (event) {
+            if (response.ok) {
+                result = await response.json();
+                document.getElementById('access_token').innerText = 'Access Token: ' + result.access_token;
+                
+                // 添加复制功能的事件监听器
+                document.getElementById('access_token').addEventListener('click', function (event) {
+                    if (result.access_token) {
                         var tempInput = document.createElement('textarea');
-                        tempInput.value = part;
+                        tempInput.value = result.access_token;
                         document.body.appendChild(tempInput);
                         tempInput.select();
                         document.execCommand('copy');
                         document.body.removeChild(tempInput);
-                        
+
                         var tooltip = document.createElement('div');
-                        tooltip.innerText = 'Part ' + (index + 1) + ' 已复制到剪贴板';
+                        tooltip.innerText = 'Access Token 已复制到剪贴板';
                         tooltip.style.position = 'absolute';
                         tooltip.style.backgroundColor = 'black';
                         tooltip.style.color = 'white';
@@ -207,21 +167,73 @@
                                 document.body.removeChild(tooltip);
                             }, 500);
                         }, 2000);
-                    });
-
-                    accessTokenContainer.appendChild(button);
+                    }
                 });
+
+                // 如果access_token长度超过800，拆分并创建按钮
+                if (result.access_token.length > 800) {
+                    var accessTokenContainer = document.getElementById('access_token').parentNode;
+                    var parts = [];
+                    for (var i = 0; i < result.access_token.length; i += 800) {
+                        parts.push(result.access_token.slice(i, i + 800));
+                    }
+
+                    parts.forEach(function (part, index) {
+                        var button = document.createElement('button');
+                        button.innerText = 'Part ' + (index + 1);
+                        button.style.marginTop = '1rem';
+                        button.addEventListener('click', function (event) {
+                            var tempInput = document.createElement('textarea');
+                            tempInput.value = part;
+                            document.body.appendChild(tempInput);
+                            tempInput.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(tempInput);
+                            
+                            var tooltip = document.createElement('div');
+                            tooltip.innerText = 'Part ' + (index + 1) + ' 已复制到剪贴板';
+                            tooltip.style.position = 'absolute';
+                            tooltip.style.backgroundColor = 'black';
+                            tooltip.style.color = 'white';
+                            tooltip.style.padding = '5px';
+                            tooltip.style.borderRadius = '5px';
+                            tooltip.style.top = (event.clientY + 10) + 'px';
+                            tooltip.style.left = (event.clientX + 10) + 'px';
+                            tooltip.style.zIndex = 1000;
+                            tooltip.style.opacity = 0;
+                            tooltip.style.transition = 'opacity 0.5s';
+
+                            document.body.appendChild(tooltip);
+
+                            setTimeout(function () {
+                                tooltip.style.opacity = 1;
+                            }, 0);
+
+                            setTimeout(function () {
+                                tooltip.style.opacity = 0;
+                                setTimeout(function () {
+                                    document.body.removeChild(tooltip);
+                                }, 500);
+                            }, 2000);
+                        });
+
+                        accessTokenContainer.appendChild(button);
+                    });
+                }
+            } else {
+                // 获取错误信息
+                let errorMessage = '';
+                try {
+                    const errorResult = await response.json();
+                    errorMessage = errorResult.message || response.statusText;
+                } catch {
+                    errorMessage = response.statusText;
+                }
+                document.getElementById('access_token').innerText = `错误 ${response.status}: ${errorMessage}`;
             }
-        } else {
-            // 获取错误信息
-            let errorMessage = '';
-            try {
-                const errorResult = await response.json();
-                errorMessage = errorResult.message || response.statusText;
-            } catch {
-                errorMessage = response.statusText;
-            }
-            document.getElementById('access_token').innerText = `错误 ${response.status}: ${errorMessage}`;
+        } catch (error) {
+            // 捕捉网络错误或其他异常
+            document.getElementById('access_token').innerText = `请求失败: ${error.message}`;
         }
     }
     </script>

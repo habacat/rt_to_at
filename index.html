@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-Hans-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -179,16 +179,15 @@
             const accessTokenElement = document.getElementById('access_token');
             accessTokenElement.innerText = 'Access Token: ' + accessToken;
 
-            // 移除之前的事件监听器以防多次添加
-            accessTokenElement.replaceWith(accessTokenElement.cloneNode(true));
-            const newAccessTokenElement = document.getElementById('access_token');
+            // 移除之前的事件监听器（通过设置为 null）
+            accessTokenElement.onclick = null;
 
             // 添加复制功能的事件监听器
-            newAccessTokenElement.addEventListener('click', function (event) {
+            accessTokenElement.onclick = function (event) {
                 if (accessToken) {
                     copyToClipboard(accessToken, event.clientX, event.clientY, 'Access Token 已复制到剪贴板');
                 }
-            });
+            };
 
             // 如果access_token长度超过800，拆分并创建按钮
             if (accessToken.length > 800) {
@@ -198,15 +197,25 @@
                     parts.push(accessToken.slice(i, i + 800));
                 }
 
+                // 移除之前可能存在的部分按钮
+                const existingButtons = accessTokenContainer.querySelectorAll('.access-token-part-button');
+                existingButtons.forEach(button => button.remove());
+
                 parts.forEach(function (part, index) {
                     const button = document.createElement('button');
                     button.innerText = 'Part ' + (index + 1);
+                    button.classList.add('access-token-part-button');
                     button.style.marginTop = '1rem';
                     button.addEventListener('click', function (event) {
                         copyToClipboard(part, event.clientX, event.clientY, `Part ${index + 1} 已复制到剪贴板`);
                     });
                     accessTokenContainer.appendChild(button);
                 });
+            } else {
+                // 移除任何现有的部分按钮，如果accessToken不够长
+                const accessTokenContainer = accessTokenElement.parentNode;
+                const existingButtons = accessTokenContainer.querySelectorAll('.access-token-part-button');
+                existingButtons.forEach(button => button.remove());
             }
         }
 

@@ -91,8 +91,10 @@
         async function getErrorMessage(response) {
             try {
                 const errorResult = await response.json();
-                return errorResult.message || response.statusText;
+                console.log('解析后的错误响应:', errorResult);
+                return errorResult.message || errorResult.error || JSON.stringify(errorResult) || response.statusText;
             } catch {
+                console.error('解析错误响应失败:', error);
                 return response.statusText;
             }
         }

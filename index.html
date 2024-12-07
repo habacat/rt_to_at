@@ -151,12 +151,12 @@
                 let response = await fetch(url, {
                     method: 'POST',
                     headers: { "Content-Type": "application/json", "X-Refresh-Token-Auth": "Linuxdo" },
-                    body: `{
-    "redirect_uri": "com.openai.chat://auth0.openai.com/ios/com.openai.chat/callback",
-    "grant_type": "refresh_token",
-    "client_id": "pdlLIX2Y72MIl2rhLhTE9VV9bN905kBh",
-    "refresh_token": "${refreshToken}"
-}`
+                    body: JSON.stringify({
+                        redirect_uri: "com.openai.chat://auth0.openai.com/ios/com.openai.chat/callback",
+                        grant_type: "refresh_token",
+                        client_id: "pdlLIX2Y72MIl2rhLhTE9VV9bN905kBh",
+                        refresh_token: refreshToken
+                    })
                 });
                 if (response.ok) {
                     const result = await response.json();

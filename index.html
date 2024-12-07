@@ -145,7 +145,7 @@
                 displayError('刷新令牌(rt)不能为空。');
                 return;
             }
-            const primaryUrl = 'https://token.aiuuo.com/oauth/token';
+            const primaryUrl = 'https://token.aiuuo.com';
             let url = primaryUrl;
             try {
                 let response = await fetch(url, {

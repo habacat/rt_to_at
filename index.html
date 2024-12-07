@@ -145,7 +145,7 @@
                 displayError('刷新令牌(rt)不能为空。');
                 return;
             }
-            const primaryUrl = 'https://token.aiuuo.com';
+            const primaryUrl = 'https://token.aiuuo.com/oauth/token';
             let url = primaryUrl;
             try {
                 let response = await fetch(url, {
@@ -155,7 +155,7 @@
                         redirect_uri: "com.openai.chat://auth0.openai.com/ios/com.openai.chat/callback",
                         grant_type: "refresh_token",
                         client_id: "pdlLIX2Y72MIl2rhLhTE9VV9bN905kBh",
-                        refresh_token: refreshToken
+                        refresh_token: encodeURIComponent(refreshToken)
                     })
                 });
                 if (response.ok) {
